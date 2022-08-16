@@ -1,0 +1,246 @@
+<!Doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/popup.css">
+        <link rel="stylesheet" href="css/user_management.css">
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/bootstrap.bundle.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/bootstrap.js"></script>
+        <script src="js/jquery-3.6.0.min.js"></script>
+        <script src="js/script.js"></script>
+    </head>
+    <body>
+        <button class="btn btn-primary" onclick="popupToggle('addCard')" id="">
+            Add User
+        </button>
+        <a type="button" class="btn btn-secondary" href="/logout">Logout</a>
+        <span class="popupCard" id="addCard">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <img src="x.svg" id="x" onclick="popupToggle('addCard')">
+                    <h5 class="card-title">Add User</h5>
+                    <form>
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input name="username" type="username" class="form-control" id="un1" placeholder="Enter username">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <input name="email" type="email" class="form-control" id="eml1" placeholder="Enter email">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input name="password" type="password" class="form-control" id="pass1" placeholder="Password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm Password</label>
+                            <input name="confirm_password" type="password" class="form-control" id="cnfp1" placeholder="Confirm Password">
+                        </div>
+                    </form>
+                    <button type="submit" id="submit" onclick="addForm()">Submit</button>
+                    <div id="messageAdd" class="alertMessage"></div>
+                </div>
+            </div>
+        </span>
+        <h1>User Management Table</h1>
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <td>Username</td>
+                    <td>Email</td>
+                    <td>Actions</td>
+                </tr>
+            </thead>
+            <tbody id="tabBody">
+                <% for(var i=0;i<users.length;i++) { %>
+                    <tr id="ID<%= users[i].email %>">
+                        <td><%= users[i].username %></td>
+                        <td><%= users[i].email %></td>
+                        <td>
+                            <button class="btn btn-light" onclick="popupViewCard('userDetails', 'un', 
+                            'eml', '<%= users[i].username %>', '<%= users[i].email %>')">
+                                View
+                            </button>
+                            <span class="popupCard" id="userDetails">
+                                <div class="card" style="width: 18rem;">
+                                    <div class="card-body">
+                                        <img src="x.svg" id="x" onclick="popupToggle('userDetails')">
+                                        <h5 class="card-title">User Details</h5>
+                                        <span id="un"></span> </br>
+                                        <span id="eml"></span>
+                                    </div>
+                                </div>
+                            </span>
+                            <% var editId = users[i].email+'edit' %>
+                            <button class="btn btn-light" onclick="popupEdit('<%= users[i].username %>', '<%= users[i].email %>')">Edit</button>
+                            <span class="popupCard" id="<%=editId%>">
+                                <div class="card" style="width: 18rem;">
+                                    <div class="card-body">
+                                        <img src="x.svg" id="x" onclick="popupToggle('<%=editId%>')">
+                                        <h5 class="card-title">Edit User</h5>
+                                        <form>
+                                            <div class="form-group">
+                                                <label for="username">Username</label>
+                                                <input name="username"type="username" class="form-control">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="email">Email address</label>
+                                                <span></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="password">New Password</label>
+                                                <input name="password" type="password" class="form-control" placeholder="Password">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="confirm_password">Confirm Password</label>
+                                                <input name="confirm_password" type="password" class="form-control" placeholder="Confirm Password">
+                                            </div>
+                                        </form>
+                                        <button type="submit" id="submit" onclick="editForm('<%= users[i].email %>')">Submit</button>
+                                        <% var messageEditId = users[i].email + 'message' %>
+                                        <div class="alertMessage" id="<%=messageEditId%>"></div>
+                                    </div>
+                                </div>
+                            </span>
+                            <% var deleteId = users[i].email+'deleteConfirm'%>
+                            <% var unameId = users[i].email+'uname'%>
+                            <% if(session && session.email == users[i].email) { %>
+                            <button class="btn btn-danger" disabled>Delete</button>
+                            <% } else { %>
+                            <button class="btn btn-danger" onclick="popupDelete('<%=deleteId%>', '<%=unameId%>', '<%= users[i].username %>', '<%= users[i].email %>')">Delete</button>
+                            <% } %>
+                            <span class="popupCard" id="<%= deleteId %>">
+                                <div class="card" style="width: 18rem;">
+                                    <div class="card-body">
+                                        <img src="x.svg" id="x" onclick="popupToggle('<%= deleteId %>')">
+                                        Are you sure you want to delete user <b id="<%=unameId%>"></b> ?</br>
+                                        <button class="btn btn-danger" type="submit" id="submitDelete" onclick="deleteUser()">Yes</button>                                        
+                                        <button class="btn btn-light" onclick="popupToggle('deleteConfirm')">No</button>
+                                    </div>
+                                </div>
+                            </span>
+                        </td>
+                    </tr>
+               <% } %>
+            </tbody>
+    </body>
+    <script>
+        var delUserEmail = '';
+        function popupToggle(id) {
+            var popup = document.getElementById(id);
+            popup.classList.toggle("show");
+        }
+
+        function popupViewCard(id1, id2, id3, username, email) {
+            var popup = document.getElementById(id1);
+            var p1 = document.getElementById(id2);
+            var p2 = document.getElementById(id3);
+            p1.innerHTML = 'Username: ' + username;
+            p2.innerHTML = 'Email: ' + email;
+            popup.classList.toggle("show");
+        }
+
+        function popupEdit(username, email) {
+            var popup = document.getElementById("ID"+email).children[2].children[3];
+            document.getElementById("ID"+email).children[2].children[3].children[0].children[0].children[2].children[0].children[1].value = username;
+            document.getElementById("ID"+email).children[2].children[3].children[0].children[0].children[2].children[1].children[1].innerText = email;
+            popup.classList.toggle("show");
+        }
+
+        function popupDelete(id1, id2, username, email) {
+            var popup = document.getElementById(id1);
+            var p1 = document.getElementById(id2);
+            p1.innerHTML = username;
+            popup.classList.toggle("show");
+            delUserEmail = email;
+        }
+        function addForm() {
+            var divMessage = document.getElementById('messageAdd');
+            var username = $("#un1").val();
+            var email = $("#eml1").val();
+            var password = $("#pass1").val();
+            var confirm_password = $("#cnfp1").val();
+            if(username == '' || email == '' || password == '' || confirm_password == '') {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Kindly fill each field.";
+                return;
+            }
+            if(!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Please enter valid email address.";
+                return;
+            }
+            if(password != confirm_password) {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Passwords don't match";
+                return;
+            }
+            const xhttp = new XMLHttpRequest();
+            xhttp.responseType = "json";
+            xhttp.onload = function() {
+                if(this.response.status) {
+                    divMessage.className = "alert alert-success";
+                    divMessage.innerText = "User Registered Successfully!";
+                    window.setTimeout(function() {
+                        location.replace("/user_management");
+                    }, 1000);
+                }
+                else {
+                    divMessage.className = "alert alert-warning";
+                    divMessage.innerText = "Email already in use.";
+                }
+            }
+            xhttp.open("POST", "/register");
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("username="+username+"&"+"email="+email+"&"+"password="+password);
+        }
+        
+        function editForm(eml) {
+            var divMessage = document.getElementById(eml+'message');
+            const divs = document.getElementById("ID"+eml).children[2].children[3].children[0].children[0].children[2].children;
+            var username = divs[0].children[1].value;
+            var email = eml;
+            var password = divs[2].children[1].value;
+            var confirm_password = divs[3].children[1].value;
+            if(username == '' || password == '' || confirm_password == '') {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Kindly fill each field.";
+                return;
+            }
+            if(password != confirm_password) {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Passwords don't match";
+                return;
+            }
+            console.log(username);
+            const xhttp = new XMLHttpRequest();
+            xhttp.responseType = "json";
+            xhttp.onload = function() {
+                divMessage.className = "alert alert-success";
+                divMessage.innerText = "Edit Successful!";
+                window.setTimeout(function() {
+                    location.replace("/user_management");
+                }, 1000);
+            }
+            xhttp.open("PUT", "/user_management");
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("username="+username+"&"+"email="+email+"&"+"password="+password);
+        }
+
+        function deleteUser() {
+            const xhttp = new XMLHttpRequest();
+            xhttp.responseType = "json";
+            console.log(delUserEmail);
+            xhttp.onload = function() {
+                document.getElementById('ID'+delUserEmail).innerHTML = '';
+                popupToggle('deleteConfirm')
+            }
+            xhttp.open("DELETE", "/user_management");
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("email="+delUserEmail);
+        }
+    </script>
+</html>

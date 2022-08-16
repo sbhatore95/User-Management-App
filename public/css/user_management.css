@@ -1,0 +1,21 @@
+#x {
+    position: relative;
+    float: right;
+    cursor: pointer;
+}
+
+body {
+    position: absolute;
+    left: 2%;
+    top: 2%;
+}
+
+.alert-success {
+    position:relative;
+    margin-top: 10px;
+}
+
+.alert-warning {
+    position:relative;
+    margin-top: 10px;
+}

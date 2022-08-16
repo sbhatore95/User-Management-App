@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/login.css">
+        <link rel="stylesheet" href="css/popup.css">
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/bootstrap.bundle.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/bootstrap.js"></script>
+        <script src="js/jquery-3.6.0.min.js"></script>
+        <script src="js/script.js"></script>
+    </head>
+    <body></body>
+        <div id="cardContainer">
+            <span class="loginCard" id="loginCard">
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body" id="cardBodyLogin">
+                        <h5 class="card-title">Login</h5>
+                        <form>
+                            <div class="form-group">
+                                <label for="email">Email address</label>
+                                <input name="email" type="email" class="form-control" id="eml2" placeholder="Enter email">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input name="password" type="password" class="form-control" id="pass2" placeholder="Password">
+                            </div>
+                        </form>
+                        <button type="submit" id="submit" onclick="loginUser()">Submit</button>
+                        <div id="warningMessageLogin"></div>
+                    </div>
+                </div>
+            </span>
+            <a href="#" onclick="popupToggle('popupRegister')">Register</a>
+            <span class="popupCard" id="popupRegister">
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body" id="cardBodyRegister">
+                        <img src="x.svg" id="x" onclick="popupToggle('popupRegister')">
+                        <h5 class="card-title">Add User</h5>
+                        <form>
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input name="username"type="username" class="form-control" id="un1" placeholder="Enter username">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email address</label>
+                                <input name="email"type="email" class="form-control" id="eml1" placeholder="Enter email">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input name="password" type="password" class="form-control" id="pass1" placeholder="Password">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm_password">Confirm Password</label>
+                                <input name="confirm_password" type="password" class="form-control" id="cnfp1" placeholder="Confirm Password">
+                            </div>
+                        </form>
+                        <button type="submit" id="submit" onclick="addForm()">Submit</button>
+                        <div id="messageRegister"></div>
+                    </div>
+                </div>
+            </span>
+        </div>
+    </body>
+    <script>
+        function popupToggle(id) {
+            var popup = document.getElementById(id);
+            popup.classList.toggle("show");
+        }
+
+        function loginUser() {
+            var divMessage = document.getElementById('warningMessageLogin');
+            divMessage.className = "";
+            var email = $("#eml2").val();
+            var password = $("#pass2").val();
+            if(email == '' || password == '') {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Kindly fill each field.";
+                return;
+            }
+            if(!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Please enter valid email address.";
+                return;
+            }
+            const xhttp = new XMLHttpRequest();
+            xhttp.responseType = "json";
+            xhttp.onreadystatechange=function() {
+                if(xhttp.readyState == 4 && xhttp.status == 200) {
+                    if(this.response.message) {
+                        divMessage.className = "alert alert-warning";
+                        divMessage.innerText = this.response.message;
+                    }
+                    else
+                        location.replace("/user_management");
+                }
+            }
+            xhttp.open("POST", "/login");
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("email="+email+"&"+"password="+password);
+        }
+
+        function addForm() {
+            var divMessage = document.getElementById('messageRegister');
+            var username = $("#un1").val();
+            var email = $("#eml1").val();
+            var password = $("#pass1").val();
+            var confirm_password = $("#cnfp1").val();
+            if(username == '' || email == '' || password == '' || confirm_password == '') {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Kindly fill each field.";
+                return;
+            }
+            if(!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Please enter valid email address.";
+                return;
+            }
+            if(password != confirm_password) {
+                divMessage.className = "alert alert-warning";
+                divMessage.innerText = "Passwords don't match";
+                return;
+            }
+            const xhttp = new XMLHttpRequest();
+            xhttp.responseType = "json";
+            xhttp.onreadystatechange=function() {
+                if(xhttp.readyState == 4 && xhttp.status == 200) {
+                    if(this.response.status == true) {
+                        divMessage.className = "alert alert-success";
+                        divMessage.innerText = "User Registered Successfully!";
+                    }
+                    else {
+                        divMessage.className = "alert alert-warning";
+                        divMessage.innerText = "Email already in use.";
+                    }
+                }
+            }
+            xhttp.open("POST", "/register");
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("username="+username+"&"+"email="+email+"&"+"password="+password+"&"+"pageNumber=1");
+        }
+    </script>
+</html>
